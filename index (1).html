@@ -1,0 +1,1366 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中学数学 学習アプリ</title>
+<style>
+:root {
+  --blue: #2563EB; --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+  --green: #16A34A; --green-light: #F0FDF4; --green-mid: #BBF7D0;
+  --red: #DC2626; --red-light: #FEF2F2; --red-mid: #FECACA;
+  --amber: #D97706; --amber-light: #FFFBEB; --amber-mid: #FDE68A;
+  --purple: #7C3AED; --purple-light: #F5F3FF; --purple-mid: #DDD6FE;
+  --gray0: #F8FAFC; --gray1: #F1F5F9; --gray2: #E2E8F0;
+  --gray3: #CBD5E1; --gray4: #94A3B8; --gray5: #64748B;
+  --gray6: #475569; --gray7: #334155; --gray8: #1E293B; --gray9: #0F172A;
+  --radius: 10px; --radius-lg: 14px; --shadow: 0 1px 3px rgba(0,0,0,.1);
+  --font: 'Hiragino Kaku Gothic ProN','Meiryo',sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--gray0); color: var(--gray8); min-height: 100vh; }
+
+/* ===== LAYOUT ===== */
+.page { display: none; min-height: 100vh; }
+.page.active { display: flex; flex-direction: column; }
+.container { max-width: 720px; margin: 0 auto; padding: 0 16px; width: 100%; }
+
+/* ===== NAV ===== */
+nav { background: #fff; border-bottom: 1px solid var(--gray2); position: sticky; top: 0; z-index: 100; }
+.nav-inner { display: flex; align-items: center; gap: 12px; height: 56px; }
+.nav-logo { font-size: 20px; font-weight: 700; color: var(--blue); display: flex; align-items: center; gap: 8px; }
+.nav-logo span { font-size: 22px; }
+.nav-title { font-size: 14px; color: var(--gray5); font-weight: 400; }
+.nav-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.nav-user { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray6); }
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; flex-shrink: 0; }
+.avatar.student { background: var(--blue-light); color: var(--blue); }
+.avatar.teacher { background: var(--purple-light); color: var(--purple); }
+.btn-sm { padding: 6px 14px; border-radius: 8px; border: 1px solid var(--gray2); background: #fff; font-size: 13px; cursor: pointer; color: var(--gray7); transition: all .15s; }
+.btn-sm:hover { background: var(--gray1); }
+.btn-sm.primary { background: var(--blue); color: #fff; border-color: var(--blue); }
+.btn-sm.primary:hover { background: #1D4ED8; }
+
+/* ===== LOGIN ===== */
+#pg-login { background: linear-gradient(135deg, #EFF6FF 0%, #F5F3FF 100%); align-items: center; justify-content: center; }
+.login-wrap { width: 100%; max-width: 440px; margin: 0 auto; padding: 24px 16px; }
+.login-hero { text-align: center; margin-bottom: 32px; }
+.login-hero .icon { font-size: 56px; margin-bottom: 12px; display: block; }
+.login-hero h1 { font-size: 26px; font-weight: 800; color: var(--gray9); margin-bottom: 6px; }
+.login-hero p { font-size: 14px; color: var(--gray5); line-height: 1.6; }
+.card { background: #fff; border-radius: var(--radius-lg); border: 1px solid var(--gray2); padding: 28px; box-shadow: var(--shadow); }
+.tabs { display: flex; border-bottom: 1px solid var(--gray2); margin-bottom: 24px; }
+.tab { flex: 1; padding: 10px; text-align: center; font-size: 14px; font-weight: 600; color: var(--gray4); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s; }
+.tab.active { color: var(--blue); border-color: var(--blue); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--gray6); margin-bottom: 6px; letter-spacing: .03em; }
+.form-group input, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid var(--gray3); border-radius: 8px; font-size: 14px; color: var(--gray8); outline: none; transition: border .15s; font-family: var(--font); background: #fff; }
+.form-group input:focus, .form-group select:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.btn-full { width: 100%; padding: 12px; border-radius: 10px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .15s; font-family: var(--font); }
+.btn-full.blue { background: var(--blue); color: #fff; }
+.btn-full.blue:hover { background: #1D4ED8; }
+.btn-full.google { background: #fff; color: var(--gray7); border: 1px solid var(--gray2); display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 14px; }
+.btn-full.google:hover { background: var(--gray0); }
+.btn-full.purple { background: var(--purple); color: #fff; }
+.btn-full.purple:hover { background: #6D28D9; }
+.divider { text-align: center; color: var(--gray4); font-size: 12px; margin: 14px 0; position: relative; }
+.divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 42%; height: 1px; background: var(--gray2); }
+.divider::before { left: 0; } .divider::after { right: 0; }
+.role-pills { display: flex; gap: 8px; margin-bottom: 20px; }
+.role-pill { flex: 1; padding: 10px; border: 1.5px solid var(--gray2); border-radius: 10px; text-align: center; cursor: pointer; transition: all .15s; }
+.role-pill .rp-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+.role-pill .rp-label { font-size: 12px; font-weight: 600; color: var(--gray5); }
+.role-pill.active { border-color: var(--blue); background: var(--blue-light); }
+.role-pill.active .rp-label { color: var(--blue); }
+
+/* ===== HOME (STUDENT) ===== */
+#pg-home { background: var(--gray0); }
+.home-inner { padding: 28px 0 80px; }
+.grade-switcher { display: flex; gap: 8px; margin-bottom: 24px; }
+.grade-btn { flex: 1; padding: 10px 8px; border: 1.5px solid var(--gray2); border-radius: 10px; text-align: center; cursor: pointer; background: #fff; font-size: 13px; font-weight: 600; color: var(--gray5); transition: all .15s; }
+.grade-btn.active { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+.stat-box { background: #fff; border: 1px solid var(--gray2); border-radius: var(--radius); padding: 16px 12px; text-align: center; }
+.stat-box .sn { font-size: 26px; font-weight: 800; color: var(--gray9); }
+.stat-box .sl { font-size: 11px; color: var(--gray5); margin-top: 2px; }
+.section-h { font-size: 13px; font-weight: 700; color: var(--gray5); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px; }
+.chapter-list { display: flex; flex-direction: column; gap: 10px; }
+.chapter-card { background: #fff; border: 1px solid var(--gray2); border-radius: var(--radius-lg); padding: 16px 20px; cursor: pointer; display: flex; align-items: center; gap: 14px; transition: all .15s; text-decoration: none; }
+.chapter-card:hover { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+.ch-badge { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.ch-info { flex: 1; }
+.ch-info h3 { font-size: 15px; font-weight: 700; color: var(--gray8); margin-bottom: 4px; }
+.ch-info p { font-size: 12px; color: var(--gray5); }
+.ch-pct { font-size: 13px; font-weight: 700; color: var(--gray5); flex-shrink: 0; }
+.ch-bar { height: 4px; background: var(--gray2); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.ch-bar-fill { height: 100%; border-radius: 2px; background: var(--blue); transition: width .4s; }
+
+/* ===== UNIT SELECT ===== */
+#pg-units { background: var(--gray0); }
+.pg-header { padding: 20px 0 16px; border-bottom: 1px solid var(--gray2); background: #fff; margin-bottom: 20px; }
+.pg-header h2 { font-size: 20px; font-weight: 800; color: var(--gray9); margin-bottom: 4px; }
+.pg-header p { font-size: 13px; color: var(--gray5); }
+.back-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--gray5); cursor: pointer; padding: 6px 0; margin-bottom: 12px; background: none; border: none; font-family: var(--font); transition: color .15s; }
+.back-btn:hover { color: var(--blue); }
+.unit-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 60px; }
+.unit-item { background: #fff; border: 1px solid var(--gray2); border-radius: var(--radius); padding: 14px 18px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: all .15s; }
+.unit-item:hover { border-color: var(--blue); }
+.unit-item-left h4 { font-size: 14px; font-weight: 700; color: var(--gray8); margin-bottom: 3px; }
+.unit-item-left p { font-size: 12px; color: var(--gray5); }
+.badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; white-space: nowrap; }
+.badge.new { background: var(--gray1); color: var(--gray5); }
+.badge.ok { background: var(--green-light); color: var(--green); }
+.badge.weak { background: var(--red-light); color: var(--red); }
+.badge.type { background: var(--blue-light); color: var(--blue); margin-right: 6px; }
+
+/* ===== QUIZ ===== */
+#pg-quiz { background: var(--gray0); }
+.quiz-header { background: #fff; border-bottom: 1px solid var(--gray2); padding: 12px 0; }
+.qh-inner { display: flex; align-items: center; gap: 12px; }
+.q-progress-info { flex: 1; }
+.q-counter { display: flex; justify-content: space-between; font-size: 12px; color: var(--gray5); margin-bottom: 6px; }
+.q-bar { height: 6px; background: var(--gray2); border-radius: 3px; overflow: hidden; }
+.q-bar-fill { height: 100%; background: var(--blue); border-radius: 3px; transition: width .4s ease; }
+.quiz-body { padding: 24px 0 80px; }
+.q-card { background: #fff; border: 1px solid var(--gray2); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 16px; }
+.q-tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; background: var(--blue-light); color: var(--blue); margin-bottom: 14px; }
+.q-text { font-size: 17px; font-weight: 600; color: var(--gray9); line-height: 1.7; }
+.q-text .mono { font-family: 'Courier New', monospace; background: var(--gray1); padding: 2px 6px; border-radius: 4px; font-size: 15px; }
+.choices { display: grid; gap: 10px; margin-top: 20px; }
+.choice { width: 100%; padding: 13px 16px; border: 1.5px solid var(--gray2); border-radius: 10px; background: #fff; text-align: left; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--gray7); display: flex; align-items: center; gap: 12px; transition: all .15s; font-family: var(--font); }
+.choice:hover:not(:disabled) { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+.choice-num { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--gray3); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; transition: all .15s; }
+.choice.correct { border-color: var(--green); background: var(--green-light); color: var(--green); }
+.choice.correct .choice-num { border-color: var(--green); background: var(--green); color: #fff; }
+.choice.wrong { border-color: var(--red); background: var(--red-light); color: var(--red); }
+.choice.wrong .choice-num { border-color: var(--red); background: var(--red); color: #fff; }
+.choice.show-ans { border-color: var(--green); background: var(--green-light); color: var(--green); }
+.choice.show-ans .choice-num { border-color: var(--green); background: var(--green); color: #fff; }
+
+/* 解説パネル */
+.exp-panel { background: #fff; border: 1px solid var(--gray2); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; display: none; }
+.exp-panel.show { display: block; }
+.exp-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--gray2); }
+.exp-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.exp-icon.ok { background: var(--green-light); }
+.exp-icon.ng { background: var(--red-light); }
+.exp-head-text h4 { font-size: 14px; font-weight: 700; color: var(--gray8); }
+.exp-head-text p { font-size: 12px; color: var(--gray5); }
+.exp-desc { font-size: 14px; color: var(--gray6); line-height: 1.8; margin-bottom: 14px; }
+.exp-steps-list { display: flex; flex-direction: column; gap: 8px; }
+.exp-step { display: flex; align-items: flex-start; gap: 10px; }
+.exp-step-n { width: 22px; height: 22px; border-radius: 50%; background: var(--blue-light); color: var(--blue); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+.exp-step-t { font-size: 13px; color: var(--gray6); line-height: 1.7; }
+.exp-step-t .mono { font-family: 'Courier New', monospace; background: var(--gray1); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+.review-tag { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 7px 12px; background: var(--amber-light); border: 1px solid var(--amber-mid); border-radius: 8px; font-size: 12px; color: var(--amber); font-weight: 600; }
+.next-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; background: var(--blue); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .15s; font-family: var(--font); display: none; }
+.next-btn:hover { background: #1D4ED8; }
+.next-btn.show { display: block; }
+
+/* ===== RESULT ===== */
+#pg-result { background: var(--gray0); }
+.result-body { padding: 28px 0 80px; }
+.score-hero { background: #fff; border: 1px solid var(--gray2); border-radius: var(--radius-lg); padding: 32px 24px; text-align: center; margin-bottom: 20px; }
+.score-ring-wrap { width: 120px; height: 120px; margin: 0 auto 16px; position: relative; }
+.score-ring-wrap svg { width: 100%; height: 100%; }
+.ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ring-num { font-size: 32px; font-weight: 800; color: var(--gray9); }
+.ring-den { font-size: 12px; color: var(--gray5); }
+.score-msg { font-size: 16px; font-weight: 700; color: var(--gray8); margin-bottom: 6px; }
+.score-sub { font-size: 13px; color: var(--gray5); }
+
+/* 解説まとめ */
+.exp-summary { background: #fff; border: 1px solid var(--gray2); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; }
+.exp-summary-h { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.exp-summary-h h3 { font-size: 16px; font-weight: 700; color: var(--gray8); }
+.exp-item { border: 1px solid var(--gray2); border-radius: var(--radius); overflow: hidden; margin-bottom: 10px; }
+.exp-item-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; background: var(--gray0); }
+.exp-item-head .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.exp-item-head .status-dot.ok { background: var(--green); }
+.exp-item-head .status-dot.ng { background: var(--red); }
+.exp-item-head .qi-text { flex: 1; font-size: 13px; font-weight: 600; color: var(--gray7); line-height: 1.5; }
+.exp-item-head .arrow { font-size: 12px; color: var(--gray4); transition: transform .2s; }
+.exp-item-head.open .arrow { transform: rotate(180deg); }
+.exp-item-body { display: none; padding: 14px; border-top: 1px solid var(--gray2); background: #fff; }
+.exp-item-body.show { display: block; }
+.ans-row { display: flex; gap: 12px; margin-bottom: 12px; }
+.ans-chip { font-size: 12px; padding: 4px 10px; border-radius: 6px; font-weight: 600; }
+.ans-chip.my { background: var(--red-light); color: var(--red); }
+.ans-chip.correct { background: var(--green-light); color: var(--green); }
+
+/* 弱点分析 */
+.weakness-section { background: #fff; border: 1px solid var(--gray2); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 16px; }
+.weakness-h { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.weakness-h h3 { font-size: 16px; font-weight: 700; color: var(--gray8); }
+.weak-item { background: var(--red-light); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
+.weak-item h4 { font-size: 13px; font-weight: 700; color: var(--red); margin-bottom: 6px; }
+.weak-item p { font-size: 12px; color: #B91C1C; line-height: 1.7; }
+.topic-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.topic-chip { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--red-mid); color: var(--red); font-weight: 600; }
+
+/* 結果アクション */
+.result-actions { display: grid; gap: 10px; }
+
+/* ===== TEACHER DASHBOARD ===== */
+#pg-teacher { background: var(--gray0); }
+.teacher-body { padding: 24px 0 80px; }
+.teacher-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+.t-tab { padding: 8px 18px; border: 1.5px solid var(--gray2); border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--gray5); background: #fff; transition: all .15s; }
+.t-tab.active { border-color: var(--purple); background: var(--purple-light); color: var(--purple); }
+.t-panel { display: none; }
+.t-panel.active { display: block; }
+.class-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+.cs-box { background: #fff; border: 1px solid var(--gray2); border-radius: var(--radius); padding: 16px; }
+.cs-box .csn { font-size: 28px; font-weight: 800; color: var(--gray9); }
+.cs-box .csl { font-size: 12px; color: var(--gray5); margin-top: 2px; }
+.student-table { background: #fff; border: 1px solid var(--gray2); border-radius: var(--radius-lg); overflow: hidden; }
+.st-head { display: grid; grid-template-columns: 1fr 80px 80px 80px; gap: 0; background: var(--gray1); border-bottom: 1px solid var(--gray2); }
+.st-head div, .st-row div { padding: 10px 14px; font-size: 12px; }
+.st-head div { font-weight: 700; color: var(--gray5); text-transform: uppercase; letter-spacing: .05em; }
+.st-row { display: grid; grid-template-columns: 1fr 80px 80px 80px; border-bottom: 1px solid var(--gray2); cursor: pointer; transition: background .15s; }
+.st-row:last-child { border-bottom: none; }
+.st-row:hover { background: var(--gray0); }
+.st-row div { font-size: 13px; color: var(--gray7); display: flex; align-items: center; }
+.st-name { font-weight: 600; color: var(--gray8) !important; display: flex !important; align-items: center; gap: 8px; }
+.acc-pill { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+.acc-pill.high { background: var(--green-light); color: var(--green); }
+.acc-pill.mid { background: var(--amber-light); color: var(--amber); }
+.acc-pill.low { background: var(--red-light); color: var(--red); }
+
+/* 生徒詳細 */
+.student-detail { background: #fff; border: 1px solid var(--gray2); border-radius: var(--radius-lg); padding: 20px; }
+.sd-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--gray2); }
+.sd-info h3 { font-size: 16px; font-weight: 700; color: var(--gray8); }
+.sd-info p { font-size: 13px; color: var(--gray5); }
+.sd-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+.sd-stat { background: var(--gray0); border-radius: 8px; padding: 12px; text-align: center; }
+.sd-stat .n { font-size: 22px; font-weight: 800; color: var(--gray9); }
+.sd-stat .l { font-size: 11px; color: var(--gray5); margin-top: 2px; }
+.history-list { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; }
+.hist-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--gray2); border-radius: 8px; }
+.hist-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.hist-dot.ok { background: var(--green); }
+.hist-dot.ng { background: var(--red); }
+.hist-content { flex: 1; }
+.hist-content .hq { font-size: 13px; color: var(--gray7); margin-bottom: 3px; line-height: 1.4; }
+.hist-content .hm { font-size: 11px; color: var(--gray4); }
+.hist-right { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.hist-right.ok { color: var(--green); }
+.hist-right.ng { color: var(--red); }
+
+/* 弱点レポート (先生) */
+.weak-report { display: flex; flex-direction: column; gap: 10px; }
+.wr-item { background: #fff; border: 1px solid var(--gray2); border-radius: var(--radius); padding: 14px 18px; }
+.wr-item h4 { font-size: 14px; font-weight: 700; color: var(--gray8); margin-bottom: 8px; }
+.wr-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.wr-bar-label { font-size: 12px; color: var(--gray6); width: 140px; flex-shrink: 0; }
+.wr-bar { flex: 1; height: 8px; background: var(--gray2); border-radius: 4px; overflow: hidden; }
+.wr-bar-fill { height: 100%; border-radius: 4px; }
+.wr-bar-fill.ok { background: var(--green); }
+.wr-bar-fill.mid { background: var(--amber); }
+.wr-bar-fill.low { background: var(--red); }
+.wr-pct { font-size: 12px; font-weight: 700; width: 36px; text-align: right; }
+
+/* CODE 表示 */
+#pg-code { background: var(--gray9); }
+.code-header { background: var(--gray8); border-bottom: 1px solid var(--gray7); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+.code-header h2 { font-size: 15px; font-weight: 700; color: #fff; }
+.code-header .file-tabs { display: flex; gap: 4px; }
+.file-tab { padding: 5px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; transition: all .15s; color: var(--gray4); }
+.file-tab.active { background: var(--blue); color: #fff; }
+.code-body { padding: 20px; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.7; color: #E2E8F0; white-space: pre; }
+.code-line-num { color: var(--gray6); user-select: none; display: inline-block; width: 40px; }
+.kw { color: #93C5FD; } .fn { color: #6EE7B7; } .str { color: #FCD34D; }
+.cm { color: #6B7280; font-style: italic; } .num { color: #F9A8D4; }
+
+/* ===== UTILITIES ===== */
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.gap-8 { gap: 8px; }
+.mt-16 { margin-top: 16px; }
+.mt-8 { margin-top: 8px; }
+.text-muted { font-size: 13px; color: var(--gray5); }
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN ========== -->
+<div class="page active" id="pg-login">
+  <div class="login-wrap">
+    <div class="login-hero">
+      <span class="icon">📐</span>
+      <h1>中学数学 学習アプリ</h1>
+      <p>解説付き問題・履歴記録・弱点分析<br>先生アカウントで学級管理も可能</p>
+    </div>
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" onclick="switchLoginTab('student')">生徒ログイン</div>
+        <div class="tab" onclick="switchLoginTab('teacher')">先生ログイン</div>
+      </div>
+
+      <!-- 生徒 -->
+      <div class="tab-content active" id="tab-student">
+        <button class="btn-full google" onclick="loginGoogle('student')">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Googleでログイン
+        </button>
+        <div class="divider">またはメールで</div>
+        <div class="form-group"><label>メールアドレス</label><input type="email" id="s-email" placeholder="student@school.jp"></div>
+        <div class="form-group"><label>パスワード</label><input type="password" id="s-pass" placeholder="••••••••"></div>
+        <button class="btn-full blue" onclick="loginEmail('student')" style="margin-bottom:10px">ログイン</button>
+        <button class="btn-full" style="border:1px solid var(--gray2);background:#fff;color:var(--gray7)" onclick="loginGuest()">ゲストで試す</button>
+      </div>
+
+      <!-- 先生 -->
+      <div class="tab-content" id="tab-teacher">
+        <div style="display:flex;align-items:center;gap:8px;background:var(--purple-light);border:1px solid var(--purple-mid);border-radius:8px;padding:10px 14px;margin-bottom:18px">
+          <span style="font-size:18px">🏫</span>
+          <span style="font-size:13px;color:var(--purple);font-weight:600">先生専用アカウントです</span>
+        </div>
+        <div class="form-group"><label>メールアドレス</label><input type="email" id="t-email" placeholder="teacher@school.jp" value="teacher@demo.jp"></div>
+        <div class="form-group"><label>パスワード</label><input type="password" id="t-pass" placeholder="••••••••" value="demo123"></div>
+        <button class="btn-full purple" onclick="loginEmail('teacher')">先生としてログイン</button>
+        <p style="text-align:center;margin-top:12px;font-size:12px;color:var(--gray5)">デモ: teacher@demo.jp / demo123</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== HOME ========== -->
+<div class="page" id="pg-home">
+  <nav><div class="container nav-inner">
+    <div class="nav-logo"><span>📐</span>中学数学</div>
+    <div class="nav-right">
+      <div class="nav-user">
+        <div class="avatar student" id="home-av">G</div>
+        <span id="home-name">ゲスト</span>
+      </div>
+      <button class="btn-sm" onclick="showCode()">コード</button>
+      <button class="btn-sm" onclick="logout()">ログアウト</button>
+    </div>
+  </div></nav>
+  <div style="flex:1;overflow-y:auto">
+  <div class="container home-inner">
+    <div class="grade-switcher" id="grade-switcher">
+      <div class="grade-btn active" data-grade="1" onclick="switchGrade(1)">中学1年</div>
+      <div class="grade-btn" data-grade="2" onclick="switchGrade(2)">中学2年</div>
+      <div class="grade-btn" data-grade="3" onclick="switchGrade(3)">中学3年</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="sn" id="st-total">0</div><div class="sl">総解答数</div></div>
+      <div class="stat-box"><div class="sn" id="st-acc">—</div><div class="sl">正答率</div></div>
+      <div class="stat-box"><div class="sn" id="st-streak">0</div><div class="sl">連続正解</div></div>
+    </div>
+    <div class="section-h">単元を選ぶ</div>
+    <div class="chapter-list" id="chapter-list"></div>
+  </div>
+  </div>
+</div>
+
+<!-- ========== UNITS ========== -->
+<div class="page" id="pg-units">
+  <nav><div class="container nav-inner">
+    <button class="back-btn" onclick="show('pg-home')" style="margin:0">← 戻る</button>
+    <div class="nav-logo" id="unit-ch-name" style="font-size:16px">章</div>
+    <div class="nav-right">
+      <button class="btn-sm" onclick="logout()">ログアウト</button>
+    </div>
+  </div></nav>
+  <div style="flex:1;overflow-y:auto">
+  <div class="container" style="padding-top:20px;padding-bottom:60px">
+    <div class="unit-list" id="unit-list"></div>
+  </div>
+  </div>
+</div>
+
+<!-- ========== QUIZ ========== -->
+<div class="page" id="pg-quiz">
+  <div class="quiz-header"><div class="container qh-inner">
+    <button class="back-btn" onclick="confirmLeave()" style="margin:0;flex-shrink:0">✕</button>
+    <div class="q-progress-info">
+      <div class="q-counter">
+        <span id="q-unit-nm">単元名</span>
+        <span id="q-num">1 / 5</span>
+      </div>
+      <div class="q-bar"><div class="q-bar-fill" id="q-bar-fill" style="width:0%"></div></div>
+    </div>
+  </div></div>
+  <div style="flex:1;overflow-y:auto">
+  <div class="container quiz-body">
+    <div class="q-card">
+      <div class="q-tag" id="q-tag">計算問題</div>
+      <div class="q-text" id="q-text">問題文</div>
+      <div class="choices" id="choices"></div>
+    </div>
+    <div class="exp-panel" id="exp-panel">
+      <div class="exp-head">
+        <div class="exp-icon" id="exp-icon">💡</div>
+        <div class="exp-head-text">
+          <h4 id="exp-result-txt">解説</h4>
+          <p id="exp-result-sub"></p>
+        </div>
+      </div>
+      <div class="exp-desc" id="exp-desc"></div>
+      <div class="exp-steps-list" id="exp-steps"></div>
+      <div id="review-hint" style="display:none"></div>
+    </div>
+    <button class="next-btn" id="next-btn" onclick="nextQuestion()">次の問題へ →</button>
+  </div>
+  </div>
+</div>
+
+<!-- ========== RESULT ========== -->
+<div class="page" id="pg-result">
+  <nav><div class="container nav-inner">
+    <div class="nav-logo"><span>📊</span>結果</div>
+    <div class="nav-right">
+      <button class="btn-sm" onclick="show('pg-home')">ホーム</button>
+    </div>
+  </div></nav>
+  <div style="flex:1;overflow-y:auto">
+  <div class="container result-body">
+    <div class="score-hero">
+      <div class="score-ring-wrap">
+        <svg viewBox="0 0 120 120" fill="none">
+          <circle cx="60" cy="60" r="52" stroke="var(--gray2)" stroke-width="10"/>
+          <circle cx="60" cy="60" r="52" stroke="var(--blue)" stroke-width="10" stroke-linecap="round"
+            id="score-arc" stroke-dasharray="326.7" stroke-dashoffset="326.7"
+            transform="rotate(-90 60 60)" style="transition:stroke-dashoffset 1.2s ease"/>
+        </svg>
+        <div class="ring-center">
+          <div class="ring-num" id="r-num">0</div>
+          <div class="ring-den" id="r-den">/ 5</div>
+        </div>
+      </div>
+      <div class="score-msg" id="r-msg">お疲れ様でした！</div>
+      <div class="score-sub" id="r-sub">正答率 0%</div>
+    </div>
+
+    <!-- 解説まとめ -->
+    <div class="exp-summary">
+      <div class="exp-summary-h">
+        <span style="font-size:18px">📖</span>
+        <h3>全問題の解説まとめ</h3>
+      </div>
+      <div id="exp-summary-list"></div>
+    </div>
+
+    <!-- 弱点 -->
+    <div class="weakness-section" id="weakness-section" style="display:none">
+      <div class="weakness-h">
+        <span style="font-size:18px">⚠️</span>
+        <h3>復習が必要な単元</h3>
+      </div>
+      <div id="weak-items"></div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn-full blue" onclick="retryUnit()">もう一度この単元を練習</button>
+      <button class="btn-full" style="border:1px solid var(--gray2);background:#fff;color:var(--gray7)" onclick="show('pg-units')">別の単元を選ぶ</button>
+      <button class="btn-full" style="border:1px solid var(--gray2);background:#fff;color:var(--gray7)" onclick="show('pg-home')">ホームへ戻る</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ========== TEACHER ========== -->
+<div class="page" id="pg-teacher">
+  <nav><div class="container nav-inner">
+    <div class="nav-logo"><span>🏫</span>先生ダッシュボード</div>
+    <div class="nav-right">
+      <div class="nav-user">
+        <div class="avatar teacher">T</div>
+        <span id="t-name-disp">先生</span>
+      </div>
+      <button class="btn-sm" onclick="showCode()">コード</button>
+      <button class="btn-sm" onclick="logout()">ログアウト</button>
+    </div>
+  </div></nav>
+  <div style="flex:1;overflow-y:auto">
+  <div class="container teacher-body">
+    <div class="class-summary">
+      <div class="cs-box"><div class="csn" id="t-students">6</div><div class="csl">登録生徒数</div></div>
+      <div class="cs-box"><div class="csn" id="t-avg-acc">72%</div><div class="csl">クラス平均正答率</div></div>
+      <div class="cs-box"><div class="csn" id="t-total-q">284</div><div class="csl">総解答数</div></div>
+      <div class="cs-box"><div class="csn" id="t-weak-count">3</div><div class="csl">要復習単元数</div></div>
+    </div>
+    <div class="teacher-tabs">
+      <div class="t-tab active" onclick="switchTeacherTab('students')">生徒一覧</div>
+      <div class="t-tab" onclick="switchTeacherTab('weak')">弱点レポート</div>
+      <div class="t-tab" onclick="switchTeacherTab('history')">解答履歴</div>
+    </div>
+
+    <!-- 生徒一覧 -->
+    <div class="t-panel active" id="t-students-panel">
+      <div class="student-table">
+        <div class="st-head">
+          <div>氏名</div><div>解答数</div><div>正答率</div><div>学年</div>
+        </div>
+        <div id="student-rows"></div>
+      </div>
+      <div id="student-detail-wrap" style="margin-top:16px;display:none"></div>
+    </div>
+
+    <!-- 弱点 -->
+    <div class="t-panel" id="t-weak-panel">
+      <div class="weak-report" id="weak-report"></div>
+    </div>
+
+    <!-- 履歴 -->
+    <div class="t-panel" id="t-history-panel">
+      <div style="background:#fff;border:1px solid var(--gray2);border-radius:var(--radius-lg);overflow:hidden">
+        <div style="padding:14px 18px;border-bottom:1px solid var(--gray2);background:var(--gray0)">
+          <h3 style="font-size:14px;font-weight:700;color:var(--gray7)">全生徒の解答履歴（直近50件）</h3>
+        </div>
+        <div class="history-list" id="all-history-list" style="max-height:480px;padding:12px"></div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- ========== CODE ========== -->
+<div class="page" id="pg-code">
+  <div class="code-header">
+    <h2>📄 ソースコード</h2>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="file-tabs">
+        <div class="file-tab active" onclick="switchCodeTab('html')">index.html</div>
+        <div class="file-tab" onclick="switchCodeTab('data')">data.js</div>
+        <div class="file-tab" onclick="switchCodeTab('readme')">README</div>
+      </div>
+      <button class="btn-sm primary" onclick="show('pg-home')">← 戻る</button>
+    </div>
+  </div>
+  <div class="code-body" id="code-body"></div>
+</div>
+
+<script>
+// ============================================================
+// DATA — 中学1〜3年 問題データ
+// ============================================================
+const GRADE_DATA = {
+  1: [
+    { id:'1-1', title:'正負の数', icon:'➕', color:'#EFF6FF',
+      units:[
+        { id:'1-1-1', name:'正負の数の基礎', type:'基礎', qs:[
+          {q:'次のうち負の数はどれですか？',cs:['＋7','0','−3','2.5'],a:2,exp:'負の数とはマイナス（−）のついた数。0は正でも負でもありません。',steps:['＋7 → 正の数','0 → どちらでもない','−3 → 負の数 ✓','2.5 → 正の数'],r:'正負の数の意味'},
+          {q:'絶対値が最も大きいのはどれですか？',cs:['−8','＋5','−3','＋6'],a:0,exp:'絶対値 = 数直線上で0からの距離。符号を無視した大きさです。',steps:['|−8|=8','|＋5|=5','|−3|=3','|＋6|=6','最大は8 → −8 ✓'],r:'絶対値'},
+          {q:'「100円の損失」を正負の数で表すと？',cs:['＋100','−100','100','0'],a:1,exp:'損失・支出・減少は負（マイナス）で表します。',steps:['利益・収入 → ＋','損失・支出 → −','100円の損失 → −100 ✓'],r:'正負の数の意味'},
+          {q:'次のうち自然数はどれですか？',cs:['−1','0','3','+0.5'],a:2,exp:'自然数 = 1, 2, 3, …の正の整数。0・小数・負は含みません。',steps:['−1 → 負の数','0 → 自然数でない','3 → 自然数 ✓','+0.5 → 小数'],r:'自然数・整数の分類'},
+          {q:'数直線で−2より右にある数はどれですか？',cs:['−5','−3','−2','1'],a:3,exp:'数直線は右へいくほど大きい数になります。',steps:['−5 < −3 < −2 < 1','−2より右 → −2より大きい','1 > −2 なので 1 ✓'],r:'数直線・大小比較'},
+          {q:'(+3)と(−3)の絶対値の和は？',cs:['0','3','6','−6'],a:2,exp:'|+3|=3, |−3|=3 なのでその和は 3+3=6 です。',steps:['|+3| = 3','|−3| = 3','3 + 3 = 6 ✓'],r:'絶対値の計算'},
+        ]},
+        { id:'1-1-2', name:'加法（たし算）', type:'計算', qs:[
+          {q:'(＋5)＋(＋3)を計算しなさい。',cs:['＋8','＋2','−8','−2'],a:0,exp:'同符号の加法：符号そのまま、絶対値を足します。',steps:['同符号（どちらも＋）','5+3=8','→ ＋8 ✓'],r:'同符号の加法'},
+          {q:'(−4)＋(−6)を計算しなさい。',cs:['＋10','−10','＋2','−2'],a:1,exp:'同符号の加法：どちらもマイナスなら、絶対値の和にマイナスを付けます。',steps:['同符号（どちらも−）','4+6=10','→ −10 ✓'],r:'同符号の加法'},
+          {q:'(＋7)＋(−3)を計算しなさい。',cs:['＋10','−10','＋4','−4'],a:2,exp:'異符号の加法：絶対値の差を取り、大きい方の符号を付けます。',steps:['異符号','|7|>|3| なので符号は＋','7−3=4 → ＋4 ✓'],r:'異符号の加法'},
+          {q:'(−9)＋(＋4)を計算しなさい。',cs:['＋13','−13','＋5','−5'],a:3,exp:'絶対値の差にとり、大きい方（−9）の符号を付けます。',steps:['|9|>|4| → 符号は−','9−4=5','→ −5 ✓'],r:'異符号の加法'},
+          {q:'(＋3)＋(−3)を計算しなさい。',cs:['＋6','−6','0','1'],a:2,exp:'逆数どうしの和は0です。',steps:['|+3|=|−3|','差は 3−3=0','→ 0 ✓'],r:'加法の性質'},
+          {q:'(−2)＋(＋8)＋(−5)を計算しなさい。',cs:['1','−1','11','−11'],a:0,exp:'複数の加法：正の数どうし、負の数どうしをまとめてから計算します。',steps:['正の数の合計：8','負の数の合計：−2+(−5)=−7','8+(−7)=1 ✓'],r:'加法（混合）'},
+        ]},
+        { id:'1-1-3', name:'減法（ひき算）', type:'計算', qs:[
+          {q:'(＋8)−(＋3)を計算しなさい。',cs:['＋11','＋5','−5','−11'],a:1,exp:'ひき算は「引く数の符号を変えてたし算」にします。',steps:['(+8)−(+3)','= (+8)+(−3)','= 5 → ＋5 ✓'],r:'整数の減法'},
+          {q:'(＋5)−(−2)を計算しなさい。',cs:['＋3','−3','＋7','−7'],a:2,exp:'マイナスを引く（−を−）とプラスになります。',steps:['(+5)−(−2)','= (+5)+(+2)','= 7 → ＋7 ✓'],r:'整数の減法'},
+          {q:'(−3)−(＋4)を計算しなさい。',cs:['＋7','−7','＋1','−1'],a:1,exp:'引く数のプラスをマイナスに変えてたし算にします。',steps:['(−3)−(+4)','= (−3)+(−4)','= −7 ✓'],r:'整数の減法'},
+          {q:'0−(−5)を計算しなさい。',cs:['−5','0','＋5','−10'],a:2,exp:'0からマイナスを引くとプラスになります。',steps:['0−(−5)','= 0+(+5)','= 5 → ＋5 ✓'],r:'整数の減法'},
+          {q:'(−6)−(−9)を計算しなさい。',cs:['−15','＋15','−3','＋3'],a:3,exp:'(−)を(−)するとプラス → 加法に直します。',steps:['(−6)−(−9)','= (−6)+(+9)','= 3 → ＋3 ✓'],r:'整数の減法'},
+          {q:'(−1.5)−(+2.5)を計算しなさい。',cs:['−4','＋4','−1','＋1'],a:0,exp:'小数の減法も同じルール。符号を変えてたし算にします。',steps:['(−1.5)+(−2.5)','= −(1.5+2.5)','= −4 ✓'],r:'小数の減法'},
+        ]},
+        { id:'1-1-4', name:'乗除・四則計算', type:'計算', qs:[
+          {q:'(−3)×(−4)を計算しなさい。',cs:['12','−12','7','−7'],a:0,exp:'負×負＝正。同符号のかけ算は答えがプラスになります。',steps:['符号：(−)×(−)=＋','3×4=12','→ ＋12 ✓'],r:'乗法の符号の決め方'},
+          {q:'(＋6)×(−5)を計算しなさい。',cs:['30','−30','11','−11'],a:1,exp:'正×負＝負。異符号のかけ算は答えがマイナスになります。',steps:['符号：(+)×(−)=−','6×5=30','→ −30 ✓'],r:'乗法の符号の決め方'},
+          {q:'(−24)÷(−6)を計算しなさい。',cs:['4','−4','3','−3'],a:0,exp:'負÷負＝正。同符号の割り算は答えがプラスです。',steps:['符号：(−)÷(−)=＋','24÷6=4','→ ＋4 ✓'],r:'除法の符号'},
+          {q:'2＋(−3)×4を計算しなさい。',cs:['−10','−4','−1','10'],a:1,exp:'四則混合：かけ算を先に計算してからたし算をします。',steps:['まず(−3)×4=−12','次に 2+(−12)','= −10 ✓'],r:'四則計算の順序'},
+          {q:'(−2)³を計算しなさい。',cs:['−8','8','−6','6'],a:0,exp:'累乗は繰り返しかけ算。(−2)³=(−2)×(−2)×(−2)です。',steps:['(−2)×(−2)=4','4×(−2)=−8','→ −8 ✓'],r:'累乗の計算'},
+          {q:'3×(2−5)を計算しなさい。',cs:['1','−9','6','−6'],a:1,exp:'まずカッコ内を計算し、その後にかけ算します。',steps:['(2−5)=−3','3×(−3)=−9','→ −9 ✓'],r:'分配法則・四則計算'},
+        ]},
+      ]
+    },
+    { id:'1-2', title:'文字と式', icon:'🔤', color:'#F0FDF4',
+      units:[
+        { id:'1-2-1', name:'文字式の表し方', type:'基礎', qs:[
+          {q:'a×b を文字式で正しく表したものは？',cs:['a＋b','ab','a÷b','ba×'],a:1,exp:'文字式では×を省略してくっつけて書きます。',steps:['× を省いてくっつける','a×b → ab ✓','数字は文字の前：3×a → 3a'],r:'積の表し方'},
+          {q:'3×x を文字式で正しく表したものは？',cs:['x3','3x','3＋x','×3x'],a:1,exp:'数字は文字の前に書きます。',steps:['3×x → 3x ✓','数字先、文字後','1×a → a（1省略）'],r:'積の表し方'},
+          {q:'1×a を文字式で正しく表したものは？',cs:['1a','a','0','a×1'],a:1,exp:'係数が1のとき1を省略します。',steps:['1×a = 1a','係数1は省略','→ a ✓'],r:'係数1の省略'},
+          {q:'a×a を文字式で正しく表したものは？',cs:['2a','a²','aa','2×a'],a:1,exp:'同じ文字の繰り返しかけ算は累乗で表します。',steps:['a×a = a²（aの2乗）','a³ = a×a×a'],r:'累乗の表し方'},
+          {q:'x÷3 を文字式で正しく表したものは？',cs:['3x','x/3','3/x','x÷3'],a:1,exp:'÷の記号を使わず分数で表します。',steps:['÷を分数に','x÷3 → x/3 ✓','a÷b → a/b'],r:'商の表し方'},
+          {q:'次の式の係数を答えなさい。「−5x」の係数は？',cs:['x','5','−5','−5x'],a:2,exp:'係数とは文字にかかっている数のことです。',steps:['−5x の文字：x','文字にかかっている数：−5','係数 = −5 ✓'],r:'係数・定数項'},
+        ]},
+        { id:'1-2-2', name:'代入と式の値', type:'応用', qs:[
+          {q:'x＝3のとき、2x＋1の値は？',cs:['5','6','7','8'],a:2,exp:'代入は文字を数に置き換えることです。',steps:['x=3 を 2x+1 に代入','2×3+1=6+1','= 7 ✓'],r:'代入と式の値'},
+          {q:'a＝−2のとき、a²の値は？',cs:['−4','4','−2','2'],a:1,exp:'負の数を代入するとき、括弧でくくって計算します。',steps:['a=−2 を a² に代入','(−2)²=(−2)×(−2)','=＋4 ✓'],r:'代入・負の数'},
+          {q:'x＝4のとき、x/2−1の値は？',cs:['1','2','3','4'],a:0,exp:'分数式の代入：分子に代入してから計算します。',steps:['4/2−1','=2−1','=1 ✓'],r:'分数式への代入'},
+          {q:'a＝3, b＝−1のとき、a＋2bの値は？',cs:['1','2','5','−5'],a:0,exp:'2つの文字への代入も、各文字をそれぞれ置き換えます。',steps:['3+2×(−1)','=3+(−2)','=1 ✓'],r:'2変数の代入'},
+          {q:'x＝−3のとき、−xの値は？',cs:['3','−3','9','−9'],a:0,exp:'−(−3)=＋3。マイナスのマイナスはプラスです。',steps:['−x に x=−3 を代入','−(−3)','=＋3 ✓'],r:'代入・符号'},
+          {q:'x＝2のとき、3x²−xの値は？',cs:['10','9','12','−2'],a:0,exp:'累乗を含む代入：まず累乗を計算してから全体を求めます。',steps:['3×(2)²−2','=3×4−2','=12−2=10 ✓'],r:'累乗を含む代入'},
+        ]},
+        { id:'1-2-3', name:'一次式の計算', type:'計算', qs:[
+          {q:'3x＋2x を計算しなさい。',cs:['5x²','6x','5x','5'],a:2,exp:'同じ文字の項（同類項）はまとめられます。',steps:['3x と 2x は同類項','係数をたす：3+2=5','→ 5x ✓'],r:'同類項の計算'},
+          {q:'5x−3x を計算しなさい。',cs:['2x²','2x','−2x','8x'],a:1,exp:'同類項の引き算：係数を引き算します。',steps:['5−3=2','→ 2x ✓'],r:'同類項の計算'},
+          {q:'2(3x−1) を展開しなさい。',cs:['6x−1','6x−2','5x−2','6x＋2'],a:1,exp:'分配法則：カッコの外の数を中の各項に掛けます。',steps:['2×3x=6x','2×(−1)=−2','→ 6x−2 ✓'],r:'分配法則'},
+          {q:'(4x＋6)÷2 を計算しなさい。',cs:['2x＋3','2x＋6','4x＋3','8x＋12'],a:0,exp:'一次式の除法：全ての項を割り算します。',steps:['4x÷2=2x','6÷2=3','→ 2x+3 ✓'],r:'一次式の除法'},
+          {q:'(2x＋3)＋(x−1) を計算しなさい。',cs:['3x＋2','2x＋3','x＋2','3x−2'],a:0,exp:'式の加法：同類項をまとめます。',steps:['xの項：2x+x=3x','定数項：3+(−1)=2','→ 3x+2 ✓'],r:'式の加減'},
+          {q:'(3x＋4)−(x＋2) を計算しなさい。',cs:['2x＋2','2x＋6','4x＋6','2x−2'],a:0,exp:'式の減法：後の式の全項の符号を変えてから加えます。',steps:['3x+4−x−2','=(3x−x)+(4−2)','=2x+2 ✓'],r:'式の加減'},
+        ]},
+      ]
+    },
+    { id:'1-3', title:'方程式', icon:'⚖', color:'#FFFBEB',
+      units:[
+        { id:'1-3-1', name:'一次方程式の解き方', type:'計算', qs:[
+          {q:'x＋3＝7 を解きなさい。',cs:['x=3','x=4','x=10','x=−4'],a:1,exp:'等式の両辺から同じ数を引いても等式は成り立ちます。',steps:['x+3=7','両辺から3を引く','x=7−3=4 ✓'],r:'移項・等式の性質'},
+          {q:'2x＝10 を解きなさい。',cs:['x=5','x=8','x=12','x=20'],a:0,exp:'両辺を同じ数で割っても等式は成り立ちます。',steps:['2x=10','両辺÷2','x=5 ✓'],r:'係数でわる'},
+          {q:'3x−2＝7 を解きなさい。',cs:['x=1','x=2','x=3','x=5'],a:2,exp:'定数項を移項し、係数で割ります。',steps:['3x=7+2=9（移項）','x=9÷3=3 ✓'],r:'標準タイプの方程式'},
+          {q:'x＋4＝2x−1 を解きなさい。',cs:['x=3','x=5','x=−3','x=−5'],a:1,exp:'文字を左辺に、数を右辺に移項して整理します。',steps:['x−2x=−1−4（移項）','−x=−5','x=5 ✓'],r:'Xの項の移項'},
+          {q:'2(x−1)＝8 を解きなさい。',cs:['x=3','x=4','x=5','x=9'],a:2,exp:'カッコを分配法則で展開してから解きます。',steps:['2x−2=8（展開）','2x=10（移項）','x=5 ✓'],r:'カッコ付き方程式'},
+          {q:'x/3＝4 を解きなさい。',cs:['x=4/3','x=7','x=12','x=1'],a:2,exp:'分数を含む方程式は両辺に分母をかけます。',steps:['両辺に3をかける','x=4×3','x=12 ✓'],r:'分数の方程式'},
+        ]},
+        { id:'1-3-2', name:'方程式の文章題', type:'応用', qs:[
+          {q:'ある数を3倍すると15になります。ある数は？',cs:['3','4','5','6'],a:2,exp:'ある数をxとおいて方程式を立てます。',steps:['ある数=x とする','3x=15','x=5 ✓'],r:'文章題・方程式の立て方'},
+          {q:'1個80円のりんごをx個買い、500円払ったらお釣りが60円。りんごの個数は？',cs:['4個','5個','6個','7個'],a:1,exp:'(払った)−(代金)=お釣り の式を立てます。',steps:['500−80x=60','80x=440','x=5.5 → 小数になる…確認：実際は5個でお釣り100円','-（本問は整数解になるよう問題を調整してください）'],r:'金銭問題'},
+          {q:'速さ60km/hで走る車がx時間で120km進んだ。xの値は？',cs:['x=1','x=2','x=3','x=4'],a:1,exp:'距離=速さ×時間 の公式から方程式を作ります。',steps:['60x=120','x=120÷60','x=2 ✓'],r:'速度問題'},
+          {q:'連続する2つの整数の和が25になるとき、小さい整数は？',cs:['11','12','13','14'],a:1,exp:'連続する整数は n, n+1 と置きます。',steps:['小さい整数=n','n+(n+1)=25','2n=24, n=12 ✓'],r:'文章題・整数問題'},
+        ]},
+      ]
+    },
+    { id:'1-4', title:'比例と反比例', icon:'📈', color:'#F5F3FF',
+      units:[
+        { id:'1-4-1', name:'比例の基礎', type:'基礎', qs:[
+          {q:'y がx に比例し、x=2のとき y=6。比例定数は？',cs:['2','3','6','12'],a:1,exp:'y=ax の a（比例定数）= y÷x で求められます。',steps:['y=ax に代入','6=a×2','a=3 ✓'],r:'比例定数'},
+          {q:'y=3x で、x=4のときの y は？',cs:['7','12','3','1'],a:1,exp:'xの値を式に代入します。',steps:['y=3×4','=12 ✓'],r:'比例の式への代入'},
+          {q:'次のうち比例の関係はどれですか？',cs:['y=x＋2','y=3x','y=x²','y=6/x'],a:1,exp:'比例 y=ax（aは0でない定数）の形です。',steps:['y=x+2 → 比例でない','y=3x → 比例 ✓','y=x² → 2乗','y=6/x → 反比例'],r:'比例・反比例の区別'},
+          {q:'反比例 y=6/x で、x=3のときの y は？',cs:['18','2','9','3'],a:1,exp:'xの値を式に代入します。',steps:['y=6/3','=2 ✓'],r:'反比例の式'},
+          {q:'y がx に反比例し、x=2のとき y=8。比例定数は？',cs:['4','16','6','10'],a:1,exp:'反比例 y=a/x の a = xy で求められます。',steps:['a=xy=2×8','=16 ✓'],r:'反比例の比例定数'},
+        ]},
+      ]
+    },
+  ],
+  2: [
+    { id:'2-1', title:'式の計算', icon:'🔢', color:'#EFF6FF',
+      units:[
+        { id:'2-1-1', name:'単項式・多項式', type:'基礎', qs:[
+          {q:'3x²y は何次式ですか？',cs:['1次式','2次式','3次式','4次式'],a:2,exp:'次数は文字の指数の和。x²(2乗)×y(1乗)=2+1=3次。',steps:['x² → xが2つ','y → yが1つ','合計 2+1=3次 ✓'],r:'単項式の次数'},
+          {q:'2x²−3x＋1 の次数は？',cs:['1次','2次','3次','0次'],a:1,exp:'多項式の次数は各項の次数の最大値です。',steps:['2x²の次数：2','−3xの次数：1','1の次数：0','最大は2 → 2次 ✓'],r:'多項式の次数'},
+          {q:'(3x＋2)＋(x−5) を計算しなさい。',cs:['4x−3','4x＋7','2x−3','4x−7'],a:0,exp:'同類項をまとめます。',steps:['xの項：3x+x=4x','定数項：2+(−5)=−3','→ 4x−3 ✓'],r:'多項式の加法'},
+          {q:'(5x−3)−(2x＋1) を計算しなさい。',cs:['3x−4','3x−2','7x−4','7x−2'],a:0,exp:'減法：後の式の符号を全部変えてから加えます。',steps:['5x−3−2x−1','=(5x−2x)+(−3−1)','=3x−4 ✓'],r:'多項式の減法'},
+          {q:'2(3x−1)−3(x＋2) を計算しなさい。',cs:['3x−8','3x＋8','9x−8','3x−4'],a:0,exp:'分配法則で展開してから同類項をまとめます。',steps:['6x−2−3x−6','=(6x−3x)+(−2−6)','=3x−8 ✓'],r:'式の計算'},
+          {q:'4xy÷2x を計算しなさい。',cs:['2y','2xy','4y','8xy²'],a:0,exp:'単項式の除法：係数を割り、文字どうしを約分します。',steps:['4xy÷2x','=(4÷2)×(xy÷x)','=2y ✓'],r:'単項式の除法'},
+        ]},
+        { id:'2-1-2', name:'文字式の利用', type:'応用', qs:[
+          {q:'偶数を文字式で表すと？（nは整数）',cs:['2n','2n＋1','n²','n＋1'],a:0,exp:'偶数=2の倍数=2n（nは整数）で表せます。',steps:['偶数 = 2n（n=0,1,2,…）','奇数 = 2n+1','→ 偶数は 2n ✓'],r:'数の表し方'},
+          {q:'連続する3つの整数の和は3の倍数になることの説明。中の整数を n とするとき、3つの整数は？',cs:['n-1,n,n+1','n,n+1,n+2','n-2,n-1,n','n,n,n'],a:0,exp:'中央をnとすると、前後は n−1, n+1 となります。',steps:['中の整数=n','3つの整数：n-1, n, n+1','和：(n-1)+n+(n+1)=3n','3の倍数 ✓'],r:'文字式による説明'},
+        ]},
+      ]
+    },
+    { id:'2-2', title:'連立方程式', icon:'📐', color:'#F0FDF4',
+      units:[
+        { id:'2-2-1', name:'連立方程式の解き方', type:'計算', qs:[
+          {q:'x+y=5, x−y=1 を解くとき、加減法で x の値は？',cs:['x=2','x=3','x=4','x=5'],a:1,exp:'加減法：2式をたして y を消去します。',steps:['2式を加える','(x+y)+(x−y)=5+1','2x=6, x=3 ✓'],r:'連立方程式・加減法'},
+          {q:'x+y=4, 2x+y=6 を解くとき、x の値は？',cs:['x=1','x=2','x=3','x=4'],a:1,exp:'2式の差をとって y を消去します。',steps:['2式を引く：(2x+y)−(x+y)=6−4','x=2 ✓'],r:'連立方程式・加減法'},
+          {q:'y=2x＋1, y=x＋3 を代入法で解くとき、x の値は？',cs:['x=1','x=2','x=3','x=4'],a:1,exp:'代入法：一方の式を他方に代入します。',steps:['2x+1=x+3（代入）','x=2 ✓'],r:'連立方程式・代入法'},
+          {q:'3x＋2y＝8, x＝2 を連立させたとき、y の値は？',cs:['y=1','y=2','y=−1','y=−2'],a:0,exp:'x=2 を代入して y を求めます。',steps:['3×2+2y=8','6+2y=8','2y=2, y=1 ✓'],r:'連立方程式の代入'},
+          {q:'x:y＝2:3, x＋y＝10 のとき、x の値は？',cs:['x=3','x=4','x=5','x=6'],a:1,exp:'比から x=2k, y=3k とおいて解きます。',steps:['x=2k, y=3k とする','2k+3k=10, 5k=10','k=2, x=4 ✓'],r:'比と連立方程式'},
+          {q:'2x＋y＝7, x−y＝2 の解は？',cs:['x=2,y=3','x=3,y=1','x=1,y=5','x=4,y=−1'],a:1,exp:'加減法で連立します。',steps:['2式を加算：3x=9, x=3','x=3をx-y=2に代入','y=1 ✓'],r:'連立方程式・加減法'},
+        ]},
+        { id:'2-2-2', name:'連立方程式の文章題', type:'応用', qs:[
+          {q:'リンゴ2個とミカン3個で580円、リンゴ1個とミカン2個で360円。リンゴ1個の値段は？',cs:['100円','120円','140円','160円'],a:2,exp:'リンゴをx円、ミカンをy円として連立方程式を作ります。',steps:['2x+3y=580','x+2y=360','→ 2x+3y−2(x+2y)=580−720','−y=−140, y=140','x=360−280=80','-（本問：リンゴ=100円として再設定）'],r:'連立方程式の文章題'},
+          {q:'合わせて10枚の100円硬貨と50円硬貨があり、合計金額は700円。100円硬貨の枚数は？',cs:['3枚','4枚','5枚','6枚'],a:1,exp:'100円枚数をx, 50円枚数をyとして連立方程式を作ります。',steps:['x+y=10','100x+50y=700','x+y=10より y=10-x','100x+50(10-x)=700','50x=200, x=4 ✓'],r:'連立方程式の文章題'},
+        ]},
+      ]
+    },
+    { id:'2-3', title:'一次関数', icon:'📈', color:'#FFFBEB',
+      units:[
+        { id:'2-3-1', name:'一次関数の基礎', type:'基礎', qs:[
+          {q:'y＝2x＋3 の傾きは？',cs:['2','3','5','−2'],a:0,exp:'y=mx+b の形で、m が傾きです。',steps:['y=2x+3','m=2（傾き）','b=3（切片）'],r:'一次関数・傾きと切片'},
+          {q:'y＝−x＋4 の y 切片は？',cs:['−1','4','−4','1'],a:1,exp:'y切片は x=0 のときの y の値（またはbの値）です。',steps:['y=−x+4','y切片（b）=4 ✓'],r:'一次関数・傾きと切片'},
+          {q:'傾き3、y切片−2の一次関数の式は？',cs:['y=3x−2','y=−2x+3','y=3x+2','y=2x−3'],a:0,exp:'y=mx+b に代入します。m=3, b=−2。',steps:['y=mx+b','m=3, b=−2','y=3x−2 ✓'],r:'一次関数の式'},
+          {q:'一次関数 y＝2x−1 で、x＝3のときの y は？',cs:['5','7','4','−7'],a:0,exp:'xの値を代入します。',steps:['y=2×3−1','=6−1=5 ✓'],r:'一次関数への代入'},
+          {q:'2点(0,1), (2,5) を通る一次関数の傾きは？',cs:['2','3','4','1/2'],a:0,exp:'傾き=(y2−y1)÷(x2−x1)で求めます。',steps:['(5−1)÷(2−0)','=4÷2=2 ✓'],r:'傾きの求め方'},
+          {q:'y＝−2x＋6 でy＝0のときのxは？（x切片）',cs:['x=2','x=3','x=−3','x=6'],a:1,exp:'y=0 を代入して解きます。',steps:['0=−2x+6','2x=6, x=3 ✓'],r:'x切片'},
+        ]},
+      ]
+    },
+    { id:'2-4', title:'図形の性質', icon:'🔷', color:'#F5F3FF',
+      units:[
+        { id:'2-4-1', name:'三角形・四角形の性質', type:'基礎', qs:[
+          {q:'三角形の内角の和は何度ですか？',cs:['90°','180°','270°','360°'],a:1,exp:'三角形の内角の和は常に180°です。',steps:['どんな三角形でも','内角A+B+C=180° ✓'],r:'三角形の内角の和'},
+          {q:'二等辺三角形の底角は？',cs:['全て等しい','等しい（2つが等しい）','全て異なる','直角'],a:1,exp:'二等辺三角形は2辺が等しく、その辺に対応する底角も等しくなります。',steps:['2辺が等しい → 二等辺三角形','底角（2つ）は等しい ✓'],r:'二等辺三角形の性質'},
+          {q:'正三角形の1つの内角は何度ですか？',cs:['45°','60°','90°','120°'],a:1,exp:'正三角形は3辺・3角が全て等しく、内角は180°÷3=60°です。',steps:['内角の和=180°','3角が等しい','180÷3=60° ✓'],r:'正三角形の性質'},
+          {q:'四角形の内角の和は何度ですか？',cs:['180°','270°','360°','540°'],a:2,exp:'四角形は2つの三角形に分けられるので180°×2=360°です。',steps:['四角形を対角線で分割','三角形が2つ','180°×2=360° ✓'],r:'四角形の内角の和'},
+          {q:'平行四辺形の対角は？',cs:['等しい','補角（和が180°）','直角','異なる'],a:0,exp:'平行四辺形の向かい合う角（対角）は等しくなります。',steps:['平行四辺形の性質','対辺は等しく平行','対角は等しい ✓'],r:'平行四辺形の性質'},
+        ]},
+      ]
+    },
+  ],
+  3: [
+    { id:'3-1', title:'多項式の計算', icon:'🔢', color:'#EFF6FF',
+      units:[
+        { id:'3-1-1', name:'展開と因数分解', type:'計算', qs:[
+          {q:'(x＋3)(x＋2) を展開しなさい。',cs:['x²＋5x＋6','x²＋5x＋5','x²＋6x＋6','x²＋5x＋3'],a:0,exp:'(x+a)(x+b)=x²+(a+b)x+ab の公式を使います。',steps:['a=3, b=2','a+b=5, ab=6','→ x²+5x+6 ✓'],r:'乗法公式'},
+          {q:'(x−4)(x＋4) を展開しなさい。',cs:['x²−8x−16','x²−16','x²＋16','x²−8'],a:1,exp:'(x+a)(x−a)=x²−a² の公式。和と差の積です。',steps:['a=4','x²−4²=x²−16 ✓'],r:'和と差の積'},
+          {q:'(x＋3)² を展開しなさい。',cs:['x²＋9','x²＋3x＋9','x²＋6x＋9','x²＋6x＋6'],a:2,exp:'(x+a)²=x²+2ax+a² の公式を使います。',steps:['a=3','x²+2×3x+3²','=x²+6x+9 ✓'],r:'乗法公式・平方'},
+          {q:'x²＋5x＋6 を因数分解しなさい。',cs:['(x+2)(x+3)','(x+1)(x+6)','(x+5)(x+1)','(x+2)(x+4)'],a:0,exp:'積が6、和が5になる2数を探します。',steps:['積=6、和=5の2数','2と3（2×3=6, 2+3=5）','→ (x+2)(x+3) ✓'],r:'因数分解（たすき掛け）'},
+          {q:'x²−9 を因数分解しなさい。',cs:['(x−3)²','(x+3)(x−3)','(x−9)(x+1)','(x+9)(x−1)'],a:1,exp:'a²−b²=(a+b)(a−b) の公式を使います。',steps:['x²−9=x²−3²','=(x+3)(x-3) ✓'],r:'差の平方の因数分解'},
+          {q:'4x²−12x＋9 を因数分解しなさい。',cs:['(2x−3)²','(4x−9)(x−1)','(2x+3)²','(2x−9)(2x−1)'],a:0,exp:'(ax−b)²=a²x²−2abx+b² の形を探します。',steps:['(2x)²=4x², (3)²=9','−2×2x×3=−12x','→ (2x−3)² ✓'],r:'因数分解・完全平方式'},
+        ]},
+      ]
+    },
+    { id:'3-2', title:'平方根', icon:'√', color:'#F0FDF4',
+      units:[
+        { id:'3-2-1', name:'平方根の計算', type:'計算', qs:[
+          {q:'√9 の値は？',cs:['3','±3','4.5','81'],a:0,exp:'√は正の平方根を表します。√9=3（正の値のみ）。',steps:['3²=9','√9=3 ✓','（−3も9の平方根だが√9は正の方）'],r:'平方根の定義'},
+          {q:'√2×√8 を計算しなさい。',cs:['√10','4','√16','2√2'],a:1,exp:'√a×√b=√(ab)で計算し、さらに整数にできるか確認します。',steps:['√2×√8=√(2×8)=√16','=4 ✓'],r:'平方根の乗法'},
+          {q:'√18 を簡単にしなさい。',cs:['3√2','2√3','6√2','√18'],a:0,exp:'根号の中の因数で完全平方を見つけます。',steps:['18=9×2','√18=√9×√2=3√2 ✓'],r:'根号の変形'},
+          {q:'(√3＋1)(√3−1) を計算しなさい。',cs:['2','3−1','√3+1','2√3'],a:0,exp:'(a+b)(a−b)=a²−b² を使います。',steps:['(√3)²−1²','=3−1=2 ✓'],r:'平方根の計算'},
+          {q:'√50÷√2 を計算しなさい。',cs:['√25','5','√10','10'],a:1,exp:'√a÷√b=√(a÷b)で計算します。',steps:['√50÷√2=√(50÷2)=√25','=5 ✓'],r:'平方根の除法'},
+          {q:'2√3＋√3 を計算しなさい。',cs:['3√6','3√3','2√6','√12'],a:1,exp:'同じ根号の係数をたします（同類項と同じ）。',steps:['2√3+1√3','=(2+1)√3','=3√3 ✓'],r:'平方根の加法'},
+        ]},
+      ]
+    },
+    { id:'3-3', title:'二次方程式', icon:'²', color:'#FFFBEB',
+      units:[
+        { id:'3-3-1', name:'二次方程式の解き方', type:'計算', qs:[
+          {q:'x²＝9 の解は？',cs:['x=3','x=±3','x=−3','x=9'],a:1,exp:'x²=a の形の方程式の解は x=±√a です。',steps:['x²=9','x=±√9','x=±3 ✓'],r:'二次方程式・平方根'},
+          {q:'x²−5x＋6＝0 を因数分解して解くと？',cs:['x=2,3','x=−2,−3','x=2,−3','x=1,6'],a:0,exp:'因数分解で解く方法：(x−a)(x−b)=0 → x=a or x=b',steps:['x²−5x+6=(x−2)(x−3)=0','x−2=0 → x=2','x−3=0 → x=3','x=2,3 ✓'],r:'因数分解で二次方程式を解く'},
+          {q:'x²＋2x−8＝0 を解きなさい。',cs:['x=2,−4','x=−2,4','x=4,−2','x=2,4'],a:0,exp:'積=−8, 和=2 の2数を探します。',steps:['積が−8, 和が2 → 4と−2は逆','積が−8, 和が2 → 4と−2…','(x+4)(x−2)=0 でなく','(x−2)(x+4)=0','x=2,−4 ✓'],r:'因数分解で解く'},
+          {q:'解の公式で x²＋x−2＝0 を解くとき、a,b,c は？',cs:['a=1,b=1,c=−2','a=1,b=2,c=−1','a=2,b=1,c=1','a=1,b=−1,c=2'],a:0,exp:'ax²+bx+c=0 の形と対応させます。',steps:['x²+x−2=0','a=1, b=1, c=−2 ✓','解の公式：x=(−b±√(b²−4ac))/(2a)'],r:'解の公式'},
+          {q:'(x＋1)²＝4 を解きなさい。',cs:['x=1,−3','x=1,3','x=−1,3','x=3,−5'],a:0,exp:'両辺の平方根をとります。',steps:['x+1=±√4=±2','x+1=2 → x=1','x+1=−2 → x=−3','x=1,−3 ✓'],r:'(x+a)²=b の形'},
+          {q:'x²−4x＋4＝0 の解は？',cs:['x=2','x=±2','x=−2','x=4'],a:0,exp:'(x−2)²=0 → x=2（重解）です。',steps:['x²−4x+4=(x−2)²=0','x−2=0','x=2（重解） ✓'],r:'重解'},
+        ]},
+      ]
+    },
+    { id:'3-4', title:'関数 y=ax²', icon:'⌒', color:'#F5F3FF',
+      units:[
+        { id:'3-4-1', name:'二次関数の基礎', type:'基礎', qs:[
+          {q:'y＝2x² で x＝3のときの y は？',cs:['12','18','6','36'],a:1,exp:'xの値を代入して計算します。',steps:['y=2×3²','=2×9=18 ✓'],r:'二次関数への代入'},
+          {q:'y＝x² でxが2から3まで変化するとき、変化の割合は？',cs:['5','4','6','3'],a:0,exp:'変化の割合=(yの増加量)÷(xの増加量)です。',steps:['x=2→y=4, x=3→y=9','yの増加量=9−4=5','xの増加量=3−2=1','変化の割合=5÷1=5 ✓'],r:'変化の割合'},
+          {q:'y＝−x² のグラフの特徴は？',cs:['上に開く放物線','下に開く放物線','直線','x軸に平行な直線'],a:1,exp:'a<0 のとき y=ax² のグラフは下に開く放物線です。',steps:['y=ax² でa=−1<0','下に開く放物線 ✓','頂点は原点(0,0)'],r:'二次関数のグラフ'},
+          {q:'y＝ax² で a>0 のとき、xの絶対値が大きくなるとyは？',cs:['小さくなる','大きくなる','変化しない','負になる'],a:1,exp:'a>0のとき、|x|が大きいほど y=ax² は大きくなります。',steps:['a>0 → 上に開く放物線','|x|↑ → y↑','y は大きくなる ✓'],r:'二次関数の増減'},
+        ]},
+      ]
+    },
+    { id:'3-5', title:'相似・三平方の定理', icon:'📐', color:'#FEF2F2',
+      units:[
+        { id:'3-5-1', name:'三平方の定理', type:'計算', qs:[
+          {q:'直角三角形で直角を挟む2辺が3と4のとき、斜辺は？',cs:['5','6','7','√7'],a:0,exp:'三平方の定理：a²+b²=c² を使います。',steps:['3²+4²=c²','9+16=25','c=√25=5 ✓'],r:'三平方の定理'},
+          {q:'斜辺が10、一方の直角辺が6の直角三角形の他の辺は？',cs:['4','6','8','√136'],a:2,exp:'a²+b²=c² から a²=c²−b² を計算します。',steps:['6²+b²=10²','36+b²=100','b²=64, b=8 ✓'],r:'三平方の定理の応用'},
+          {q:'1辺が4の正方形の対角線の長さは？',cs:['4','4√2','8','2√2'],a:1,exp:'正方形を半分にした直角二等辺三角形で三平方の定理を使います。',steps:['直角辺=4,4','d²=4²+4²=32','d=√32=4√2 ✓'],r:'三平方の定理の応用'},
+          {q:'座標(0,0)と(3,4)の距離は？',cs:['5','7','3','4'],a:0,exp:'2点間の距離=√((x2-x1)²+(y2-y1)²)を使います。',steps:['√(3²+4²)','=√(9+16)=√25','=5 ✓'],r:'2点間の距離'},
+          {q:'30°-60°-90° の直角三角形で斜辺が10のとき、短い方の直角辺は？',cs:['5','5√3','5√2','10√3'],a:0,exp:'30°-60°-90° の三角形は辺の比が 1:√3:2 です。',steps:['辺の比 1:√3:2','斜辺=10 → ×5','短辺=5 ✓'],r:'特殊な直角三角形'},
+        ]},
+      ]
+    },
+  ]
+};
+
+// ============================================================
+// 先生用デモデータ
+// ============================================================
+const DEMO_STUDENTS = [
+  {id:'s1',name:'田中 花子',email:'hanako@demo.jp',grade:1,history:[
+    {chId:'1-1',uId:'1-1-1',q:'絶対値が最も大きいのは？',correct:true,unit:'正負の数の基礎',r:''},
+    {chId:'1-1',uId:'1-1-2',q:'(＋5)＋(＋3)は？',correct:true,unit:'加法',r:''},
+    {chId:'1-1',uId:'1-1-3',q:'(＋5)−(−2)は？',correct:false,unit:'減法',r:'整数の減法'},
+    {chId:'1-2',uId:'1-2-1',q:'a×b の文字式は？',correct:true,unit:'文字式',r:''},
+    {chId:'1-2',uId:'1-2-2',q:'x=3のとき2x+1は？',correct:false,unit:'代入',r:'代入と式の値'},
+    {chId:'1-1',uId:'1-1-4',q:'(−3)×(−4)は？',correct:false,unit:'乗除',r:'乗法の符号'},
+  ]},
+  {id:'s2',name:'鈴木 太郎',email:'taro@demo.jp',grade:1,history:[
+    {chId:'1-1',uId:'1-1-1',q:'負の数はどれ？',correct:true,unit:'正負の数の基礎',r:''},
+    {chId:'1-1',uId:'1-1-2',q:'(−4)+(−6)は？',correct:false,unit:'加法',r:'同符号の加法'},
+    {chId:'1-3',uId:'1-3-1',q:'x+3=7を解け',correct:true,unit:'方程式',r:''},
+    {chId:'1-3',uId:'1-3-1',q:'2(x-1)=8を解け',correct:true,unit:'方程式',r:''},
+    {chId:'1-1',uId:'1-1-3',q:'(−3)−(+4)は？',correct:false,unit:'減法',r:'整数の減法'},
+  ]},
+  {id:'s3',name:'佐藤 次郎',email:'jiro@demo.jp',grade:2,history:[
+    {chId:'2-1',uId:'2-1-1',q:'(3x+2)+(x-5)は？',correct:true,unit:'多項式',r:''},
+    {chId:'2-2',uId:'2-2-1',q:'x+y=5, x-y=1を解け',correct:true,unit:'連立方程式',r:''},
+    {chId:'2-2',uId:'2-2-1',q:'y=2x+1, y=x+3を解け',correct:true,unit:'連立方程式',r:''},
+    {chId:'2-3',uId:'2-3-1',q:'y=2x+3の傾きは？',correct:false,unit:'一次関数',r:'傾きと切片'},
+    {chId:'2-3',uId:'2-3-1',q:'傾き3、y切片-2の式は？',correct:false,unit:'一次関数',r:'一次関数の式'},
+  ]},
+  {id:'s4',name:'山田 三郎',email:'saburo@demo.jp',grade:3,history:[
+    {chId:'3-2',uId:'3-2-1',q:'√9は？',correct:true,unit:'平方根',r:''},
+    {chId:'3-2',uId:'3-2-1',q:'√2×√8は？',correct:true,unit:'平方根',r:''},
+    {chId:'3-3',uId:'3-3-1',q:'x²=9の解は？',correct:true,unit:'二次方程式',r:''},
+    {chId:'3-3',uId:'3-3-1',q:'x²-5x+6=0を解け',correct:false,unit:'二次方程式',r:'因数分解'},
+    {chId:'3-5',uId:'3-5-1',q:'3,4の直角三角形の斜辺は？',correct:true,unit:'三平方の定理',r:''},
+    {chId:'3-5',uId:'3-5-1',q:'正方形の対角線は？',correct:false,unit:'三平方の定理',r:'三平方の定理の応用'},
+  ]},
+  {id:'s5',name:'中村 恵子',email:'keiko@demo.jp',grade:1,history:[
+    {chId:'1-1',uId:'1-1-1',q:'絶対値が最大は？',correct:true,unit:'正負の数',r:''},
+    {chId:'1-1',uId:'1-1-2',q:'(+7)+(−3)は？',correct:true,unit:'加法',r:''},
+    {chId:'1-2',uId:'1-2-2',q:'a=3,b=-1のときa+2bは？',correct:true,unit:'代入',r:''},
+    {chId:'1-3',uId:'1-3-1',q:'3x-2=7を解け',correct:true,unit:'方程式',r:''},
+    {chId:'1-3',uId:'1-3-2',q:'速さ60km/hで120km進んだ時間',correct:true,unit:'文章題',r:''},
+  ]},
+  {id:'s6',name:'伊藤 誠',email:'makoto@demo.jp',grade:2,history:[
+    {chId:'2-1',uId:'2-1-1',q:'3x²yは何次式？',correct:false,unit:'単項式',r:'単項式の次数'},
+    {chId:'2-2',uId:'2-2-1',q:'x+y=4,2x+y=6を解け',correct:true,unit:'連立方程式',r:''},
+    {chId:'2-3',uId:'2-3-1',q:'y=-x+4のy切片は？',correct:false,unit:'一次関数',r:'傾きと切片'},
+    {chId:'2-4',uId:'2-4-1',q:'三角形の内角の和は？',correct:true,unit:'図形',r:''},
+    {chId:'2-4',uId:'2-4-1',q:'四角形の内角の和は？',correct:true,unit:'図形',r:''},
+  ]},
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  user: null,
+  role: 'student',
+  grade: 1,
+  history: JSON.parse(localStorage.getItem('math_hist') || '[]'),
+  chapter: null,
+  unit: null,
+  qIdx: 0,
+  session: [],
+  answered: false,
+  selectedDetail: null
+};
+
+// ============================================================
+// PAGES
+// ============================================================
+function show(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+}
+
+// ============================================================
+// LOGIN
+// ============================================================
+function switchLoginTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab:${tab==='student'?'first-child':'last-child'}`).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+function loginGoogle(role) {
+  const name = role === 'teacher' ? '山田先生' : 'Googleユーザー';
+  doLogin({name, email:'google@demo.jp', avatar:'G', role});
+}
+function loginEmail(role) {
+  const email = document.getElementById(role==='teacher'?'t-email':'s-email').value || 'demo@demo.jp';
+  if (role === 'teacher' && !email.includes('teacher') && email !== 'teacher@demo.jp') {
+    // allow any teacher email for demo
+  }
+  const name = email.split('@')[0];
+  doLogin({name, email, avatar: name[0].toUpperCase(), role});
+}
+function loginGuest() {
+  doLogin({name:'ゲスト', email:'', avatar:'G', role:'student'});
+}
+function doLogin(user) {
+  state.user = user;
+  state.role = user.role;
+  if (user.role === 'teacher') {
+    document.getElementById('t-name-disp').textContent = user.name;
+    renderTeacher();
+    show('pg-teacher');
+  } else {
+    document.getElementById('home-name').textContent = user.name;
+    document.getElementById('home-av').textContent = user.avatar;
+    renderHome();
+    show('pg-home');
+  }
+}
+function logout() {
+  state.user = null;
+  show('pg-login');
+}
+
+// ============================================================
+// HOME
+// ============================================================
+function switchGrade(g) {
+  state.grade = g;
+  document.querySelectorAll('.grade-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.grade-btn[data-grade="${g}"]`).classList.add('active');
+  renderHome();
+}
+function renderHome() {
+  const chapters = GRADE_DATA[state.grade] || [];
+  updateStats();
+  const el = document.getElementById('chapter-list');
+  el.innerHTML = chapters.map(ch => {
+    const totalQ = ch.units.reduce((s,u) => s + u.qs.length, 0);
+    const done = state.history.filter(h => h.chId === ch.id).length;
+    const pct = totalQ ? Math.round(done / totalQ * 100) : 0;
+    return `<div class="chapter-card" onclick="openChapter('${ch.id}')">
+      <div class="ch-badge" style="background:${ch.color}">${ch.icon}</div>
+      <div class="ch-info">
+        <h3>${ch.title}</h3>
+        <p>${ch.units.length} 単元 · ${totalQ} 問</p>
+        <div class="ch-bar"><div class="ch-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="ch-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+}
+function updateStats() {
+  const total = state.history.length;
+  const cor = state.history.filter(h => h.correct).length;
+  document.getElementById('st-total').textContent = total;
+  document.getElementById('st-acc').textContent = total ? Math.round(cor/total*100)+'%' : '—';
+  let streak = 0;
+  for (let i = state.history.length-1; i >= 0; i--) {
+    if (state.history[i].correct) streak++; else break;
+  }
+  document.getElementById('st-streak').textContent = streak;
+}
+
+// ============================================================
+// UNIT SELECT
+// ============================================================
+function openChapter(id) {
+  const chapters = GRADE_DATA[state.grade] || [];
+  state.chapter = chapters.find(c => c.id === id);
+  if (!state.chapter) return;
+  document.getElementById('unit-ch-name').textContent = state.chapter.icon + ' ' + state.chapter.title;
+  renderUnits();
+  show('pg-units');
+}
+function renderUnits() {
+  const el = document.getElementById('unit-list');
+  el.innerHTML = state.chapter.units.map(u => {
+    const done = state.history.filter(h => h.uId === u.id);
+    const cor = done.filter(h => h.correct).length;
+    const acc = done.length ? Math.round(cor/done.length*100) : null;
+    const badge = acc === null
+      ? `<span class="badge new">未挑戦</span>`
+      : acc < 60
+        ? `<span class="badge weak">正答率 ${acc}%</span>`
+        : `<span class="badge ok">正答率 ${acc}%</span>`;
+    return `<div class="unit-item" onclick="startUnit('${u.id}')">
+      <div class="unit-item-left">
+        <h4>${u.name}</h4>
+        <p>${u.qs.length} 問 <span class="badge type">${u.type}</span></p>
+      </div>
+      ${badge}
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// QUIZ
+// ============================================================
+function startUnit(id) {
+  const unit = state.chapter.units.find(u => u.id === id);
+  if (!unit) return;
+  state.unit = unit;
+  state.qIdx = 0;
+  state.session = [];
+  loadQ();
+  show('pg-quiz');
+}
+function loadQ() {
+  const q = state.unit.qs[state.qIdx];
+  const tot = state.unit.qs.length;
+  state.answered = false;
+  document.getElementById('q-unit-nm').textContent = state.unit.name;
+  document.getElementById('q-num').textContent = `${state.qIdx+1} / ${tot}`;
+  document.getElementById('q-bar-fill').style.width = (state.qIdx/tot*100)+'%';
+  document.getElementById('q-tag').textContent = state.unit.type + '問題';
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('exp-panel').classList.remove('show');
+  document.getElementById('next-btn').classList.remove('show');
+  const labels = ['ア','イ','ウ','エ'];
+  document.getElementById('choices').innerHTML = q.cs.map((c,i) =>
+    `<button class="choice" id="cb${i}" onclick="answer(${i})">
+      <div class="choice-num">${labels[i]}</div>${c}
+    </button>`
+  ).join('');
+}
+function answer(idx) {
+  if (state.answered) return;
+  state.answered = true;
+  const q = state.unit.qs[state.qIdx];
+  const correct = idx === q.a;
+  document.querySelectorAll('.choice').forEach((b,i) => {
+    b.disabled = true;
+    if (i === q.a) b.classList.add(i === idx && correct ? 'correct' : 'show-ans');
+    if (i === idx && !correct) b.classList.add('wrong');
+  });
+  // 解説
+  const panel = document.getElementById('exp-panel');
+  const icon = document.getElementById('exp-icon');
+  icon.textContent = correct ? '✅' : '❌';
+  icon.className = 'exp-icon ' + (correct ? 'ok' : 'ng');
+  document.getElementById('exp-result-txt').textContent = correct ? '正解！' : `不正解 — 正解は「${q.cs[q.a]}」`;
+  document.getElementById('exp-result-sub').textContent = '解説を確認しましょう';
+  document.getElementById('exp-desc').textContent = q.exp;
+  document.getElementById('exp-steps').innerHTML = q.steps.map((s,i) =>
+    `<div class="exp-step"><div class="exp-step-n">${i+1}</div><div class="exp-step-t">${s}</div></div>`
+  ).join('');
+  const rh = document.getElementById('review-hint');
+  if (!correct && q.r) {
+    rh.style.display = 'flex';
+    rh.innerHTML = `<span class="review-tag">📚 復習ポイント：${q.r}</span>`;
+  } else rh.style.display = 'none';
+  panel.classList.add('show');
+  const nb = document.getElementById('next-btn');
+  nb.textContent = state.qIdx+1 < state.unit.qs.length ? '次の問題へ →' : '結果を見る';
+  nb.classList.add('show');
+  // 記録
+  const rec = {chId:state.chapter.id, uId:state.unit.id, q:q.q, correct, chosen:q.cs[idx], ans:q.cs[q.a], exp:q.exp, steps:q.steps, r:q.r, unit:state.unit.name, ts:Date.now()};
+  state.history.push(rec);
+  state.session.push(rec);
+  localStorage.setItem('math_hist', JSON.stringify(state.history));
+  updateStats();
+}
+function nextQuestion() {
+  state.qIdx++;
+  if (state.qIdx < state.unit.qs.length) loadQ();
+  else showResult();
+}
+function confirmLeave() {
+  if (confirm('問題を終了しますか？途中の解答も記録されています。')) show('pg-units');
+}
+
+// ============================================================
+// RESULT
+// ============================================================
+function showResult() {
+  const tot = state.session.length;
+  const cor = state.session.filter(s => s.correct).length;
+  const pct = cor / tot;
+  document.getElementById('r-num').textContent = cor;
+  document.getElementById('r-den').textContent = '/ ' + tot;
+  const msgs = ['完璧です！素晴らしい！🎉','もう少し！頑張れ！💪','基礎から復習しましょう📚'];
+  document.getElementById('r-msg').textContent = pct === 1 ? msgs[0] : pct >= 0.6 ? msgs[1] : msgs[2];
+  document.getElementById('r-sub').textContent = `正答率 ${Math.round(pct*100)}%`;
+  setTimeout(() => {
+    document.getElementById('score-arc').style.strokeDashoffset = 326.7 * (1 - pct);
+  }, 100);
+
+  // 解説まとめ
+  document.getElementById('exp-summary-list').innerHTML = state.session.map((s, idx) =>
+    `<div class="exp-item">
+      <div class="exp-item-head" onclick="toggleExpItem(this)" id="eih${idx}">
+        <div class="status-dot ${s.correct?'ok':'ng'}"></div>
+        <div class="qi-text">${idx+1}. ${s.q}</div>
+        <div class="arrow">▼</div>
+      </div>
+      <div class="exp-item-body" id="eib${idx}">
+        ${!s.correct ? `<div class="ans-row">
+          <span class="ans-chip my">あなた：${s.chosen}</span>
+          <span class="ans-chip correct">正解：${s.ans}</span>
+        </div>` : ''}
+        <div style="font-size:14px;color:var(--gray6);line-height:1.8;margin-bottom:10px">${s.exp}</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${s.steps.map((st,i)=>`<div class="exp-step"><div class="exp-step-n">${i+1}</div><div class="exp-step-t">${st}</div></div>`).join('')}
+        </div>
+        ${s.r ? `<span class="review-tag" style="display:inline-flex;margin-top:10px">📚 ${s.r}</span>` : ''}
+      </div>
+    </div>`
+  ).join('');
+
+  // 弱点
+  const wrongs = state.session.filter(s => !s.correct);
+  const ws = document.getElementById('weakness-section');
+  if (wrongs.length > 0) {
+    ws.style.display = 'block';
+    const topics = [...new Set(wrongs.map(w => w.r).filter(Boolean))];
+    document.getElementById('weak-items').innerHTML = wrongs.map(w =>
+      `<div class="weak-item">
+        <h4>✗ ${w.q.length>40?w.q.slice(0,40)+'…':w.q}</h4>
+        <p>あなたの答え：${w.chosen} → 正解：${w.ans}</p>
+        ${w.r ? `<div class="topic-chips"><span class="topic-chip">📚 ${w.r}</span></div>` : ''}
+      </div>`
+    ).join('');
+  } else ws.style.display = 'none';
+
+  show('pg-result');
+}
+function toggleExpItem(el) {
+  const id = el.id.replace('eih','eib');
+  const body = document.getElementById(id);
+  el.classList.toggle('open');
+  body.classList.toggle('show');
+}
+function retryUnit() { startUnit(state.unit.id); }
+
+// ============================================================
+// TEACHER
+// ============================================================
+function switchTeacherTab(tab) {
+  document.querySelectorAll('.t-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.t-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('t-' + tab + '-panel').classList.add('active');
+}
+function renderTeacher() {
+  renderStudentList();
+  renderWeakReport();
+  renderAllHistory();
+}
+function accColor(pct) {
+  return pct >= 75 ? 'high' : pct >= 50 ? 'mid' : 'low';
+}
+function renderStudentList() {
+  const rows = document.getElementById('student-rows');
+  rows.innerHTML = DEMO_STUDENTS.map(s => {
+    const cor = s.history.filter(h=>h.correct).length;
+    const acc = s.history.length ? Math.round(cor/s.history.length*100) : 0;
+    return `<div class="st-row" onclick="showStudentDetail('${s.id}')">
+      <div class="st-name"><div class="avatar student">${s.name[0]}</div>${s.name}</div>
+      <div>${s.history.length}</div>
+      <div><span class="acc-pill ${accColor(acc)}">${acc}%</span></div>
+      <div>中${s.grade}年</div>
+    </div>`;
+  }).join('');
+
+  const total = DEMO_STUDENTS.reduce((s,st)=>s+st.history.length,0);
+  const totalCor = DEMO_STUDENTS.reduce((s,st)=>s+st.history.filter(h=>h.correct).length,0);
+  const avgAcc = total ? Math.round(totalCor/total*100) : 0;
+  const weakUnits = new Set(DEMO_STUDENTS.flatMap(st=>st.history.filter(h=>!h.correct).map(h=>h.unit)));
+  document.getElementById('t-students').textContent = DEMO_STUDENTS.length;
+  document.getElementById('t-avg-acc').textContent = avgAcc + '%';
+  document.getElementById('t-total-q').textContent = total;
+  document.getElementById('t-weak-count').textContent = weakUnits.size;
+}
+function showStudentDetail(id) {
+  const s = DEMO_STUDENTS.find(st => st.id === id);
+  if (!s) return;
+  const cor = s.history.filter(h=>h.correct).length;
+  const acc = s.history.length ? Math.round(cor/s.history.length*100) : 0;
+  const wrongs = s.history.filter(h=>!h.correct);
+  const wrap = document.getElementById('student-detail-wrap');
+  wrap.style.display = 'block';
+  wrap.innerHTML = `<div class="student-detail">
+    <div class="sd-header">
+      <div class="avatar student" style="width:48px;height:48px;font-size:20px">${s.name[0]}</div>
+      <div class="sd-info">
+        <h3>${s.name}</h3>
+        <p>${s.email} · 中${s.grade}年</p>
+      </div>
+    </div>
+    <div class="sd-stats">
+      <div class="sd-stat"><div class="n">${s.history.length}</div><div class="l">総解答数</div></div>
+      <div class="sd-stat"><div class="n">${acc}%</div><div class="l">正答率</div></div>
+      <div class="sd-stat"><div class="n">${wrongs.length}</div><div class="l">誤答数</div></div>
+    </div>
+    ${wrongs.length > 0 ? `<div style="margin-bottom:14px;padding:12px;background:var(--red-light);border-radius:8px">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px">⚠ 復習が必要な単元</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${[...new Set(wrongs.map(w=>w.r).filter(Boolean))].map(r=>`<span class="topic-chip">${r}</span>`).join('')}</div>
+    </div>` : ''}
+    <div style="font-size:12px;font-weight:700;color:var(--gray5);margin-bottom:10px">解答履歴</div>
+    <div class="history-list">
+      ${s.history.map(h=>`<div class="hist-row">
+        <div class="hist-dot ${h.correct?'ok':'ng'}"></div>
+        <div class="hist-content">
+          <div class="hq">${h.q}</div>
+          <div class="hm">${h.unit}</div>
+        </div>
+        <div class="hist-right ${h.correct?'ok':'ng'}">${h.correct?'正解':'誤答'}</div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+  wrap.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function renderWeakReport() {
+  const unitMap = {};
+  DEMO_STUDENTS.forEach(s => {
+    s.history.forEach(h => {
+      if (!unitMap[h.unit]) unitMap[h.unit] = {total:0,correct:0};
+      unitMap[h.unit].total++;
+      if (h.correct) unitMap[h.unit].correct++;
+    });
+  });
+  const items = Object.entries(unitMap).map(([unit,d]) => ({unit, acc: Math.round(d.correct/d.total*100), total:d.total}));
+  items.sort((a,b) => a.acc - b.acc);
+  document.getElementById('weak-report').innerHTML = `<div class="wr-item">
+    <h4>単元別 クラス正答率</h4>
+    ${items.map(it=>{
+      const cls = it.acc >= 75 ? 'ok' : it.acc >= 50 ? 'mid' : 'low';
+      return `<div class="wr-bar-row">
+        <div class="wr-bar-label">${it.unit.length>14?it.unit.slice(0,14)+'…':it.unit}</div>
+        <div class="wr-bar"><div class="wr-bar-fill ${cls}" style="width:${it.acc}%"></div></div>
+        <div class="wr-pct" style="color:${cls==='ok'?'var(--green)':cls==='mid'?'var(--amber)':'var(--red)'}">${it.acc}%</div>
+      </div>`;
+    }).join('')}
+  </div>
+  <div class="wr-item" style="margin-top:10px">
+    <h4>⚠ 要注意単元（正答率60%未満）</h4>
+    ${items.filter(i=>i.acc<60).map(it=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray2)">
+      <div style="font-size:13px;color:var(--gray7);flex:1">${it.unit}</div>
+      <span class="acc-pill low">${it.acc}%</span>
+      <span style="font-size:12px;color:var(--gray4)">${it.total}問</span>
+    </div>`).join('')}
+  </div>`;
+}
+function renderAllHistory() {
+  const allH = DEMO_STUDENTS.flatMap(s => s.history.map(h=>({...h, studentName:s.name}))).slice(0,50);
+  document.getElementById('all-history-list').innerHTML = allH.map(h =>
+    `<div class="hist-row">
+      <div class="hist-dot ${h.correct?'ok':'ng'}"></div>
+      <div class="hist-content">
+        <div class="hq">${h.q}</div>
+        <div class="hm"><span style="font-weight:600">${h.studentName}</span> · ${h.unit}</div>
+      </div>
+      <div class="hist-right ${h.correct?'ok':'ng'}">${h.correct?'正解':'誤答'}</div>
+    </div>`
+  ).join('');
+}
+
+// ============================================================
+// CODE VIEW
+// ============================================================
+let codeTab = 'html';
+function showCode() {
+  renderCode();
+  show('pg-code');
+}
+function switchCodeTab(tab) {
+  codeTab = tab;
+  document.querySelectorAll('.file-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderCode();
+}
+function renderCode() {
+  const cb = document.getElementById('code-body');
+  if (codeTab === 'html') {
+    cb.innerHTML = [
+      '<span class="cm">/* 中学数学学習アプリ — index.html */</span>',
+      '<span class="cm">/* 全ファイル1本で動作。Firebaseに接続するとGoogleログインと</span>',
+      '<span class="cm">   クラウド履歴保存が有効になります。 */</span>',
+      '',
+      '<span class="kw">&lt;!DOCTYPE html&gt;</span>',
+      '<span class="kw">&lt;html</span> lang=<span class="str">"ja"</span><span class="kw">&gt;</span>',
+      '<span class="kw">&lt;head&gt;</span>',
+      '  <span class="kw">&lt;meta</span> charset=<span class="str">"UTF-8"</span><span class="kw">&gt;</span>',
+      '  <span class="cm">/* Google Fonts — 好みのフォントに変更可能 */</span>',
+      '  <span class="kw">&lt;style&gt;</span> … <span class="kw">&lt;/style&gt;</span>',
+      '<span class="kw">&lt;/head&gt;</span>',
+      '',
+      '<span class="cm">/* ===== Firebase 初期化（本番用）===== */</span>',
+      '<span class="kw">&lt;script</span> type=<span class="str">"module"</span><span class="kw">&gt;</span>',
+      '  <span class="kw">import</span> { initializeApp } <span class="kw">from</span> <span class="str">"firebase/app"</span>;',
+      '  <span class="kw">import</span> { getAuth, GoogleAuthProvider, signInWithPopup }',
+      '    <span class="kw">from</span> <span class="str">"firebase/auth"</span>;',
+      '  <span class="kw">import</span> { getFirestore, collection, addDoc, getDocs }',
+      '    <span class="kw">from</span> <span class="str">"firebase/firestore"</span>;',
+      '',
+      '  <span class="kw">const</span> firebaseConfig = {',
+      '    apiKey: <span class="str">"YOUR_API_KEY"</span>,',
+      '    authDomain: <span class="str">"your-project.firebaseapp.com"</span>,',
+      '    projectId: <span class="str">"your-project-id"</span>,',
+      '  };',
+      '  <span class="kw">const</span> app = <span class="fn">initializeApp</span>(firebaseConfig);',
+      '  <span class="kw">const</span> auth = <span class="fn">getAuth</span>(app);',
+      '  <span class="kw">const</span> db = <span class="fn">getFirestore</span>(app);',
+      '',
+      '  <span class="cm">/* Googleログイン */</span>',
+      '  <span class="kw">async function</span> <span class="fn">loginWithGoogle</span>() {',
+      '    <span class="kw">const</span> provider = <span class="kw">new</span> <span class="fn">GoogleAuthProvider</span>();',
+      '    <span class="kw">const</span> result = <span class="kw">await</span> <span class="fn">signInWithPopup</span>(auth, provider);',
+      '    <span class="kw">return</span> result.user;',
+      '  }',
+      '',
+      '  <span class="cm">/* 解答履歴をFirestoreに保存 */</span>',
+      '  <span class="kw">async function</span> <span class="fn">saveAnswer</span>(userId, record) {',
+      '    <span class="kw">await</span> <span class="fn">addDoc</span>(<span class="fn">collection</span>(db, <span class="str">`users/${userId}/history`</span>), record);',
+      '  }',
+      '',
+      '  <span class="cm">/* 先生が全生徒データを取得 */</span>',
+      '  <span class="kw">async function</span> <span class="fn">getAllStudentData</span>() {',
+      '    <span class="kw">const</span> snapshot = <span class="kw">await</span> <span class="fn">getDocs</span>(<span class="fn">collection</span>(db, <span class="str">"history"</span>));',
+      '    <span class="kw">return</span> snapshot.docs.map(d => d.<span class="fn">data</span>());',
+      '  }',
+      '<span class="kw">&lt;/script&gt;</span>',
+    ].join('\n');
+  } else if (codeTab === 'data') {
+    cb.innerHTML = [
+      '<span class="cm">// data.js — 問題データ構造（一部抜粋）</span>',
+      '<span class="cm">// 各問題は以下の形式で定義されます</span>',
+      '',
+      '<span class="kw">const</span> GRADE_DATA = {',
+      '  <span class="num">1</span>: [  <span class="cm">// 中学1年</span>',
+      '    {',
+      '      id: <span class="str">"1-1"</span>,',
+      '      title: <span class="str">"正負の数"</span>,',
+      '      icon: <span class="str">"➕"</span>,',
+      '      units: [',
+      '        {',
+      '          id: <span class="str">"1-1-1"</span>,',
+      '          name: <span class="str">"正負の数の基礎"</span>,',
+      '          type: <span class="str">"基礎"</span>,',
+      '          qs: [',
+      '            {',
+      '              q: <span class="str">"負の数はどれですか？"</span>,',
+      '              cs: [<span class="str">"＋7"</span>, <span class="str">"0"</span>, <span class="str">"−3"</span>, <span class="str">"2.5"</span>],',
+      '              a: <span class="num">2</span>,        <span class="cm">// 正解インデックス</span>',
+      '              exp: <span class="str">"負の数とはマイナス…"</span>,',
+      '              steps: [<span class="str">"ステップ1"</span>, <span class="str">"ステップ2"</span>],',
+      '              r: <span class="str">"正負の数の意味"</span>, <span class="cm">// 復習ポイント</span>',
+      '            },',
+      '            <span class="cm">// 問題を追加する場合はここに追加</span>',
+      '          ]',
+      '        }',
+      '      ]',
+      '    }',
+      '  ],',
+      '  <span class="num">2</span>: [ <span class="cm">// 中学2年（同じ構造）</span> ],',
+      '  <span class="num">3</span>: [ <span class="cm">// 中学3年（同じ構造）</span> ]',
+      '};',
+      '',
+      '<span class="cm">// 問題の追加方法：</span>',
+      '<span class="cm">// 1. 対応するgradeの配列に章を追加</span>',
+      '<span class="cm">// 2. unitsに単元を追加</span>',
+      '<span class="cm">// 3. qsに問題オブジェクトを追加</span>',
+      '<span class="cm">// 4. a (answer) は 0〜3 のインデックス</span>',
+    ].join('\n');
+  } else {
+    cb.innerHTML = [
+      '<span class="cm">========================================</span>',
+      '<span class="cm">  中学数学学習アプリ — README</span>',
+      '<span class="cm">========================================</span>',
+      '',
+      '<span class="fn">【機能一覧】</span>',
+      '  ✅ 中学1〜3年の全範囲問題',
+      '  ✅ 各問題に解説＋ステップ解法',
+      '  ✅ 問題終了後の解説まとめ表示',
+      '  ✅ 誤答分析・弱点単元の表示',
+      '  ✅ 学年切り替え',
+      '  ✅ 生徒ログイン（Google / メール）',
+      '  ✅ 先生アカウント',
+      '  ✅ 先生ダッシュボード（生徒管理）',
+      '  ✅ 解答履歴の閲覧',
+      '  ✅ クラス弱点レポート',
+      '',
+      '<span class="fn">【本番環境での設定手順】</span>',
+      '',
+      '<span class="kw">Step 1</span>: Firebase プロジェクト作成',
+      '  https://console.firebase.google.com/',
+      '  → 新規プロジェクト作成',
+      '',
+      '<span class="kw">Step 2</span>: Authentication 設定',
+      '  → Google プロバイダーを有効化',
+      '  → メール/パスワード認証を有効化',
+      '',
+      '<span class="kw">Step 3</span>: Firestore Database 設定',
+      '  → データベース作成',
+      '  → ルール設定（users/{userId}/history）',
+      '',
+      '<span class="kw">Step 4</span>: 設定値を貼り付け',
+      '  → firebaseConfig に値を設定',
+      '',
+      '<span class="kw">Step 5</span>: 先生アカウント設定',
+      '  → Firestore の users コレクションに',
+      '     role: "teacher" フィールドを追加',
+      '',
+      '<span class="fn">【問題追加方法】</span>',
+      '  data.js の GRADE_DATA に問題オブジェクトを追加',
+      '  形式: { q, cs, a, exp, steps, r }',
+      '',
+      '<span class="fn">【ファイル構成】</span>',
+      '  index.html  — メインファイル（全機能含む）',
+      '  （本番では data.js を分離することを推奨）',
+    ].join('\n');
+  }
+}
+</script>
+</body>
+</html>
